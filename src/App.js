@@ -11,6 +11,8 @@ import "@material/card/dist/mdc.card.css";
 
 import "./App.css";
 
+const userID = "mkusnadi";
+
 class App extends Component {
   constructor() {
     super();
@@ -53,19 +55,20 @@ class App extends Component {
     const submitAction = (this.state.expense.id
       ? this.update
       : this.append).bind(this);
-    submitAction(this.state.expense).then(
-      response => {
-        this.snackbar.show({
-          message: `Expense ${this.state.expense.id ? "updated" : "added"}!`
-        });
-        this.load();
-      },
-      response => {
-        console.error("Something went wrong");
-        console.error(response);
-        this.setState({loading: false});
-      }
-    );
+    submitAction(this.state.expense);
+    //   .then(
+    //   response => {
+    //     this.snackbar.show({
+    //       message: `Expense ${this.state.expense.id ? "updated" : "added"}!`
+    //     });
+    //     this.load();
+    //   },
+    //   response => {
+    //     console.error("Something went wrong");
+    //     console.error(response);
+    //     this.setState({loading: false});
+    //   }
+    // );
   }
 
   handleExpenseChange = (attribute, value) => {
@@ -161,13 +164,18 @@ class App extends Component {
   }
 
   append(expense) {
-    return window.gapi.client.sheets.spreadsheets.values.append({
-      spreadsheetId: this.spreadsheetId,
-      range: "Expenses!A1",
-      valueInputOption: "USER_ENTERED",
-      insertDataOption: "INSERT_ROWS",
-      values: [this.formatExpense(expense)]
-    });
+    console.log(expense);
+    addExpense(userID, expense.description, expense.date, expense.category, expense.account, expense.amount, () => {
+      console.log("expense ADDED");
+      this.setState({
+        processing: false
+      })
+    }, () => {
+      console.log("expense cant be added");
+      this.setState({
+        processing: false
+      })
+    })
   }
 
   update(expense) {
