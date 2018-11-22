@@ -6,17 +6,19 @@ import {
     ControlLabel
 
 } from "react-bootstrap";
-//import LoaderButton from "../components/LoaderButton";
+import LoaderButton from "./LoaderButton";
 import "./Signup.css";
 
 export default class SignUp extends Component {
     constructor(props) {
         super(props);
-
+        console.log("inside Signup")
         this.state = {
             isLoading: false,
             email: "",
             password: "",
+            monthlySalary:"",
+            annualSalary:"",
             confirmPassword: "",
             confirmationCode: "",
             newUser: null
@@ -27,7 +29,10 @@ export default class SignUp extends Component {
         return (
             this.state.email.length > 0 &&
             this.state.password.length > 0 &&
-            this.state.password === this.state.confirmPassword
+            this.state.password === this.state.confirmPassword &&
+            this.state.annualSalary > 12 * this.state.monthlySalary &&
+            this.state.monthlySalary > 0
+
         );
     }
 
@@ -70,15 +75,15 @@ export default class SignUp extends Component {
                     />
                     <HelpBlock>Please check your email for the code.</HelpBlock>
                 </FormGroup>
-                {/*<LoaderButton*/}
-                    {/*block*/}
-                    {/*bsSize="large"*/}
-                    {/*disabled={!this.validateConfirmationForm()}*/}
-                    {/*type="submit"*/}
-                    {/*isLoading={this.state.isLoading}*/}
-                    {/*text="Verify"*/}
-                    {/*loadingText="Verifying…"*/}
-                {/*/>*/}
+                <LoaderButton
+                    block
+                    bsSize="large"
+                    disabled={!this.validateConfirmationForm()}
+                    type="submit"
+                    isLoading={this.state.isLoading}
+                    text="Verify"
+                    loadingText="Verifying…"
+                />
             </form>
         );
     }
@@ -111,15 +116,31 @@ export default class SignUp extends Component {
                         type="password"
                     />
                 </FormGroup>
-                {/*<LoaderButton*/}
-                    {/*block*/}
-                    {/*bsSize="large"*/}
-                    {/*disabled={!this.validateForm()}*/}
-                    {/*type="submit"*/}
-                    {/*isLoading={this.state.isLoading}*/}
-                    {/*text="Signup"*/}
-                    {/*loadingText="Signing up…"*/}
-                {/*/>*/}
+                <FormGroup controlId="monthlySalary" bsSize="large">
+                    <ControlLabel>Monthy Salary</ControlLabel>
+                    <FormControl
+                        value={this.state.monthlySalary}
+                        onChange={this.handleChange}
+                        type="monthlySalary"
+                    />
+                </FormGroup>
+                <FormGroup controlId="annualSalary" bsSize="large">
+                    <ControlLabel>Annual Salary</ControlLabel>
+                    <FormControl
+                        value={this.state.annualSalary}
+                        onChange={this.handleChange}
+                        type="annualSalary"
+                    />
+                </FormGroup>
+                <LoaderButton
+                    block
+                    bsSize="large"
+                    disabled={!this.validateForm()}
+                    type="submit"
+                    isLoading={this.state.isLoading}
+                    text="Signup"
+                    loadingText="Signing up…"
+                />
             </form>
         );
     }
