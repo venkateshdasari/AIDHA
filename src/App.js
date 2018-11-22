@@ -263,7 +263,7 @@ class App extends Component {
               >
                 perm_identity
               </a>}
-              
+
               {this.state.signedIn &&
               <a
                 className="material-icons mdc-toolbar__icon"
@@ -276,9 +276,9 @@ class App extends Component {
               >
                 exit_to_app
               </a>}
+                {<Login/>}
                 {this.state.showSignUpForm &&
                 <SignUp/>
-
                 }
             </section>
           </div>
@@ -296,6 +296,17 @@ class App extends Component {
               Sign In
             </button>
           </div>}
+            {this.state.signedIn === false &&
+            <div className="center">
+                <button
+                    className="mdc-button Login-in"
+                    aria-label="Login"
+                    onClick={() =>
+                        this.handleLogin()
+                    }>
+                    Login
+                </button>
+            </div>}
           {this.state.signedIn && this.renderBody()}
         </div>
         <div
