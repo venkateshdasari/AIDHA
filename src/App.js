@@ -9,7 +9,6 @@ import "@material/snackbar/dist/mdc.snackbar.css";
 import "@material/card/dist/mdc.card.css";
 
 import "./App.css";
-import Login from "./components/signUp/Login";
 
 class App extends Component {
   constructor() {
@@ -23,7 +22,7 @@ class App extends Component {
       "1yLCNqfoTnt9D8JrD7NoCdJUua46QbBaFvynUJEruI58";
 
     this.state = {
-      signedIn: false,
+      signedIn: true,
       accounts: [],
       categories: [],
       expenses: [],
@@ -31,9 +30,7 @@ class App extends Component {
       expense: {},
       currentMonth: undefined,
       previousMonth: undefined,
-      showExpenseForm: false,
-        showSignUpForm: false,
-        showLoginForm: true
+      showExpenseForm: false
     };
 
   }
@@ -50,7 +47,6 @@ class App extends Component {
           "https://www.googleapis.com/auth/spreadsheets"
       })
         .then(() => {
-           return <Login/>
           console.log("DONE INIT");
           window.gapi.auth2
             .getAuthInstance()
@@ -139,9 +135,6 @@ class App extends Component {
     this.setState({showExpenseForm: false});
   }
 
-    handleSignUp = () => {
-        this.setState({showSignUpForm: true});
-    }
 
 
   onExpenseNew() {
@@ -238,102 +231,83 @@ class App extends Component {
       });
   }
 
-  render() {
-    return (
-      <div>
-        <header className="mdc-toolbar mdc-toolbar--fixed">
-          <div className="mdc-toolbar__row">
-            <section className="mdc-toolbar__section mdc-toolbar__section--align-start">
-              <span className="mdc-toolbar__title">Expenses</span>
-            </section>
-            <section
-              className="mdc-toolbar__section mdc-toolbar__section--align-end"
-              role="toolbar"
-            >
-              {this.state.signedIn === false &&
-              <a
-                className="material-icons mdc-toolbar__icon"
-                aria-label="Login in"
-                alt="Login in"
-                onClick={e =>
-                  //e.preventDefault();
-                 // window.gapi.auth2.getAuthInstance().signIn();
-                    this.handleSignUp()
-                }
-              >
-                perm_identity
-              </a>}
-
-              {this.state.signedIn &&
-              <a
-                className="material-icons mdc-toolbar__icon"
-                aria-label="Sign out"
-                alt="Sign out"
-                onClick={e => {
-                  e.preventDefault();
-                  window.gapi.auth2.getAuthInstance().signOut();
-                }}
-              >
-                exit_to_app
-              </a>}
-                {<Login/>}
-                {this.state.showSignUpForm &&
-                <SignUp/>
-                }
-            </section>
-          </div>
-        </header>
-        <div className="toolbar-adjusted-content">
-          {this.state.signedIn === undefined && <LoadingBar/>}
-          {this.state.signedIn === false &&
-          <div className="center">
-            <button
-              className="mdc-button sign-in"
-              aria-label="Sign in"
-              onClick={() =>
-                  this.handleSignUp()
-              }>
-              Sign In
-            </button>
-          </div>}
-            {this.state.signedIn === false &&
-            <div className="center">
-                <button
-                    className="mdc-button Login-in"
-                    aria-label="Login"
-                    onClick={() =>
-                        this.handleLogin()
-                    }>
-                    Login
-                </button>
-            </div>}
-          {this.state.signedIn && this.renderBody()}
-        </div>
-        <div
-          ref={el => {
-            if (el) {
-              this.snackbar = new MDCSnackbar(el);
-            }
-          }}
-          className="mdc-snackbar"
-          aria-live="assertive"
-          aria-atomic="true"
-          aria-hidden="true"
-        >
-          <div className="mdc-snackbar__text"/>
-          <div className="mdc-snackbar__action-wrapper">
-            <button
-              type="button"
-              className="mdc-button mdc-snackbar__action-button"
-              aria-hidden="true"
-            />
-          </div>
-        </div>
-      </div>
-    );
-  }
-    renderSignUpForm() {
-        return <SignUp/>;
+    render() {
+        return (
+            <div>
+                <header className="mdc-toolbar mdc-toolbar--fixed">
+                    <div className="mdc-toolbar__row">
+                        <section className="mdc-toolbar__section mdc-toolbar__section--align-start">
+                            <span className="mdc-toolbar__title"><b>aidha</b> - Expense Manager</span>
+                        </section>
+                        <section
+                            className="mdc-toolbar__section mdc-toolbar__section--align-end"
+                            role="toolbar"
+                        >
+                            {this.state.signedIn === false &&
+                            <a
+                                className="material-icons mdc-toolbar__icon"
+                                aria-label="Sign in"
+                                alt="Sign in"
+                                onClick={e => {
+                                    e.preventDefault();
+                                    window.gapi.auth2.getAuthInstance().signIn();
+                                }}
+                            >
+                                perm_identity
+                            </a>}
+                            {this.state.signedIn &&
+                            <a
+                                className="material-icons mdc-toolbar__icon"
+                                aria-label="Sign out"
+                                alt="Sign out"
+                                onClick={e => {
+                                    e.preventDefault();
+                                    window.gapi.auth2.getAuthInstance().signOut();
+                                }}
+                            >
+                                exit_to_app
+                            </a>}
+                        </section>
+                    </div>
+                </header>
+                <div className="toolbar-adjusted-content">
+                    {this.state.signedIn === undefined && <LoadingBar />}
+                    {this.state.signedIn === false &&
+                    <div className="center">
+                        <button
+                            className="mdc-button sign-in"
+                            aria-label="Sign in"
+                            onClick={() => {
+                                window.gapi.auth2.getAuthInstance().signIn();
+                            }}
+                        >
+                            Sign In
+                        </button>
+                    </div>}
+                    {this.state.signedIn && this.renderBody()}
+                </div>
+                <div
+                    ref={el => {
+                        if (el) {
+                            this.snackbar = new MDCSnackbar(el);
+                        }
+                    }}
+                    className="mdc-snackbar"
+                    aria-live="assertive"
+                    aria-atomic="true"
+                    aria-hidden="true"
+                >
+                    <div className="mdc-snackbar__text" />
+                    <div className="mdc-snackbar__action-wrapper">
+                        <button
+                            type="button"
+                            className="mdc-button mdc-snackbar__action-button"
+                            aria-hidden="true"
+                        />
+                    </div>
+                </div>
+            </div>
+        );
     }
 
   renderBody() {
