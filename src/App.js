@@ -1,6 +1,7 @@
 import React, {Component} from "react";
 import {ExpenseList, ExpenseForm, LoadingBar, SignUp} from "./components/index";
 import {MDCSnackbar} from "@material/snackbar/dist/mdc.snackbar.js";
+import {getConfig, getAllExpense, addExpense} from "./utils/fetchAPI";
 
 import "@material/fab/dist/mdc.fab.css";
 import "@material/button/dist/mdc.button.css";
@@ -9,7 +10,6 @@ import "@material/snackbar/dist/mdc.snackbar.css";
 import "@material/card/dist/mdc.card.css";
 
 import "./App.css";
-import Login from "./components/signUp/Login";
 
 class App extends Component {
   constructor() {
@@ -23,44 +23,21 @@ class App extends Component {
       "1yLCNqfoTnt9D8JrD7NoCdJUua46QbBaFvynUJEruI58";
 
     this.state = {
-      signedIn: false,
+      signedIn: true,
       accounts: [],
       categories: [],
       expenses: [],
-      processing: true,
+      processing: false,
       expense: {},
       currentMonth: undefined,
       previousMonth: undefined,
-      showExpenseForm: false,
-        showSignUpForm: false,
-        showLoginForm: true
+      showExpenseForm: false
     };
 
   }
 
   componentDidMount() {
-    window.gapi.load("client:auth2", () => {
-      window.gapi.client.init({
-        apiKey: this.apiId,
-        discoveryDocs: [
-          "https://sheets.googleapis.com/$discovery/rest?version=v4"
-        ],
-        clientId: this.clientId,
-        scope:
-          "https://www.googleapis.com/auth/spreadsheets"
-      })
-        .then(() => {
-           return <Login/>
-          console.log("DONE INIT");
-          window.gapi.auth2
-            .getAuthInstance()
-            .isSignedIn.listen(this.signedInChanged);
-          this.signedInChanged(
-            window.gapi.auth2.getAuthInstance().isSignedIn.get()
-          );
-        });
-    });
-    console.log("DONE");
+    this.load();
   }
 
   signedInChanged = (signedIn) => {
@@ -139,9 +116,6 @@ class App extends Component {
     this.setState({showExpenseForm: false});
   }
 
-    handleSignUp = () => {
-        this.setState({showSignUpForm: true});
-    }
 
 
   onExpenseNew() {
@@ -206,36 +180,51 @@ class App extends Component {
   }
 
   load() {
-    window.gapi.client.sheets.spreadsheets.values
-      .batchGet({
-        spreadsheetId: this.spreadsheetId,
-        ranges: [
-          "Data!A2:A50",
-          "Data!E2:E50",
-          "Expenses!A2:F",
-          "Current!H1",
-          "Previous!H1"
-        ]
+    getConfig((response) => {
+      console.log(response);
+      this.setState({
+        accounts: response.spending_type,
+        categories: response.category.monthly
       })
-      .then(response => {
-        const accounts = response.result.valueRanges[0].values.map(
-          items => items[0]
-        );
-        const categories = response.result.valueRanges[1].values.map(
-          items => items[0]
-        );
-        this.setState({
-          accounts: accounts,
-          categories: categories,
-          expenses: (response.result.valueRanges[2].values || [])
-            .map(this.parseExpense)
-            .reverse()
-            .slice(0, 30),
-          processing: false,
-          currentMonth: response.result.valueRanges[3].values[0][0],
-          previousMonth: response.result.valueRanges[4].values[0][0]
-        });
-      });
+    }, () => {
+      console.log("Error fetching configs");
+    });
+
+    getAllExpense("mkusnadi", (data) => {
+      console.log(data)
+    }, () =>{
+      console.log("Error fetching expenses");
+    })
+    // window.gapi.client.sheets.spreadsheets.values
+    //   .batchGet({
+    //     spreadsheetId: this.spreadsheetId,
+    //     ranges: [
+    //       "Data!A2:A50",
+    //       "Data!E2:E50",
+    //       "Expenses!A2:F",
+    //       "Current!H1",
+    //       "Previous!H1"
+    //     ]
+    //   })
+    //   .then(response => {
+    //     const accounts = response.result.valueRanges[0].values.map(
+    //       items => items[0]
+    //     );
+    //     const categories = response.result.valueRanges[1].values.map(
+    //       items => items[0]
+    //     );
+    //     this.setState({
+    //       accounts: accounts,
+    //       categories: categories,
+    //       expenses: (response.result.valueRanges[2].values || [])
+    //         .map(this.parseExpense)
+    //         .reverse()
+    //         .slice(0, 30),
+    //       processing: false,
+    //       currentMonth: response.result.valueRanges[3].values[0][0],
+    //       previousMonth: response.result.valueRanges[4].values[0][0]
+    //     });
+    //   });
   }
 
   render() {
@@ -244,7 +233,7 @@ class App extends Component {
         <header className="mdc-toolbar mdc-toolbar--fixed">
           <div className="mdc-toolbar__row">
             <section className="mdc-toolbar__section mdc-toolbar__section--align-start">
-              <span className="mdc-toolbar__title">Expenses</span>
+              <span className="mdc-toolbar__title"><b>aidha</b> - Expense Manager</span>
             </section>
             <section
               className="mdc-toolbar__section mdc-toolbar__section--align-end"
@@ -253,17 +242,15 @@ class App extends Component {
               {this.state.signedIn === false &&
               <a
                 className="material-icons mdc-toolbar__icon"
-                aria-label="Login in"
-                alt="Login in"
-                onClick={e =>
-                  //e.preventDefault();
-                 // window.gapi.auth2.getAuthInstance().signIn();
-                    this.handleSignUp()
-                }
+                aria-label="Sign in"
+                alt="Sign in"
+                onClick={e => {
+                  e.preventDefault();
+                  window.gapi.auth2.getAuthInstance().signIn();
+                }}
               >
                 perm_identity
               </a>}
-
               {this.state.signedIn &&
               <a
                 className="material-icons mdc-toolbar__icon"
@@ -276,37 +263,23 @@ class App extends Component {
               >
                 exit_to_app
               </a>}
-                {<Login/>}
-                {this.state.showSignUpForm &&
-                <SignUp/>
-                }
             </section>
           </div>
         </header>
         <div className="toolbar-adjusted-content">
-          {this.state.signedIn === undefined && <LoadingBar/>}
+          {this.state.signedIn === undefined && <LoadingBar />}
           {this.state.signedIn === false &&
           <div className="center">
             <button
               className="mdc-button sign-in"
               aria-label="Sign in"
-              onClick={() =>
-                  this.handleSignUp()
-              }>
+              onClick={() => {
+                window.gapi.auth2.getAuthInstance().signIn();
+              }}
+            >
               Sign In
             </button>
           </div>}
-            {this.state.signedIn === false &&
-            <div className="center">
-                <button
-                    className="mdc-button Login-in"
-                    aria-label="Login"
-                    onClick={() =>
-                        this.handleLogin()
-                    }>
-                    Login
-                </button>
-            </div>}
           {this.state.signedIn && this.renderBody()}
         </div>
         <div
@@ -320,7 +293,7 @@ class App extends Component {
           aria-atomic="true"
           aria-hidden="true"
         >
-          <div className="mdc-snackbar__text"/>
+          <div className="mdc-snackbar__text" />
           <div className="mdc-snackbar__action-wrapper">
             <button
               type="button"
@@ -332,9 +305,6 @@ class App extends Component {
       </div>
     );
   }
-    renderSignUpForm() {
-        return <SignUp/>;
-    }
 
   renderBody() {
     if (this.state.processing) return <LoadingBar/>;

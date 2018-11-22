@@ -48,7 +48,7 @@ export function getConfig(handleSuccess, handleError) {
   }).then((response) => response.json())
     .then((data) => {
       if (data.status === 200) {
-        handleSuccess();
+        handleSuccess(data);
       } else {
         handleError();
       }
