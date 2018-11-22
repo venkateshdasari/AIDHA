@@ -65,11 +65,11 @@ export function addExpense(userID, description, date, category, spending_type, a
         "spending_type": spending_type,
         "category": category,
         "amount": amount,
-        "userID": userID,
+        "user_id": userID,
       })
     }).then((response) => response.json())
     .then((data) => {
-      if(data.status !== 200){
+      if(data.status === 200){
         handleSuccess();
       }else{
         handleError();
