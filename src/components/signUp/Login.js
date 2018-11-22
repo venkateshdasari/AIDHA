@@ -1,14 +1,19 @@
 import React, { Component } from "react";
 import { Button, FormGroup, FormControl, ControlLabel } from "react-bootstrap";
 import "./Login.css";
+import { login } from '../../utils/fetchAPI'
 
 export default class Login extends Component {
     constructor(props) {
         super(props);
+        this.handleLogin = this.handleLogin.bind(this);
 
         this.state = {
             email: "",
-            password: ""
+            password: "",
+            isSignedIn: false,
+            isWrongPassword: false,
+            isUserTaken: false
         };
     }
 
@@ -20,12 +25,40 @@ export default class Login extends Component {
         this.setState({
             [event.target.id]: event.target.value
         });
-    }
+    };
 
     handleSubmit = event => {
         event.preventDefault();
-    }
+    };
 
+    handleLogin(){
+        console.log(this.state);
+        login(this.state.email, this.state.password, (resp) =>{
+            let userInfo = {
+                "firstName": resp.first_name,
+                "lastName": resp.last_name,
+                "monthlyIncome": resp.monthly_income,
+                "userId": resp.user_id
+            };
+            this.setState({
+              isSignedIn: true,
+            });
+            console.log(userInfo);
+        }, (resp) => {
+            if(resp.status === 403){
+                this.setState({
+                  isWrongPassword: true
+                });
+              console.log("Wrong password given")
+            }
+            else if(resp.status === 404){
+                this.setState({
+                  isUserTaken: true
+                });
+              console.log("UserID has been taken")
+            }
+        })
+    }
     render() {
         return (
             <div className="Login">
@@ -34,7 +67,7 @@ export default class Login extends Component {
                         <ControlLabel>Email</ControlLabel>
                         <FormControl
                             autoFocus
-                            type="email"
+                            type="text"
                             value={this.state.email}
                             onChange={this.handleChange}
                         />
@@ -52,6 +85,7 @@ export default class Login extends Component {
                         bsSize="large"
                         disabled={!this.validateForm()}
                         type="submit"
+                        onClick={this.handleLogin}
                     >
                         Login
                     </Button>
