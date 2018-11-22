@@ -137,16 +137,18 @@ class App extends Component {
     });
   }
 
-  parseExpense(value, index) {
-    return {
-      id: `Expenses!A${index + 2}`,
-      date: value[0],
-      description: value[1],
-      category: value[3],
-      amount: value[4].replace(",", ""),
-      account: value[2]
-    };
-  }
+
+    parseExpense(value, index) {
+        return {
+            id: `Expenses!A${index + 2}`,
+            date: value.date,
+            description: value.description,
+            category: value.category,
+            amount: value.amount,
+            account: value.spending_type,
+            userID:value.user_id
+        };
+    }
 
   formatExpense(expense) {
     return [
@@ -193,9 +195,18 @@ class App extends Component {
 
     getAllExpense("mkusnadi", (data) => {
       console.log(data)
+        this.setState({
+                  expenses: (data || [])
+                    .map(this.parseExpense)
+                    .reverse()
+                    .slice(0, 30),
+                  processing: false,
+        });
     }, () =>{
       console.log("Error fetching expenses");
     })
+
+
     // window.gapi.client.sheets.spreadsheets.values
     //   .batchGet({
     //     spreadsheetId: this.spreadsheetId,
