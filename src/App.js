@@ -1,6 +1,7 @@
 import React, {Component} from "react";
 import {ExpenseList, ExpenseForm, LoadingBar, SignUp} from "./components/index";
 import {MDCSnackbar} from "@material/snackbar/dist/mdc.snackbar.js";
+import {getConfig, getAllExpense, addExpense} from "./utils/fetchAPI";
 
 import "@material/fab/dist/mdc.fab.css";
 import "@material/button/dist/mdc.button.css";
@@ -26,7 +27,7 @@ class App extends Component {
       accounts: [],
       categories: [],
       expenses: [],
-      processing: true,
+      processing: false,
       expense: {},
       currentMonth: undefined,
       previousMonth: undefined,
@@ -36,27 +37,8 @@ class App extends Component {
   }
 
   componentDidMount() {
-    window.gapi.load("client:auth2", () => {
-      window.gapi.client.init({
-        apiKey: this.apiId,
-        discoveryDocs: [
-          "https://sheets.googleapis.com/$discovery/rest?version=v4"
-        ],
-        clientId: this.clientId,
-        scope:
-          "https://www.googleapis.com/auth/spreadsheets"
-      })
-        .then(() => {
-          console.log("DONE INIT");
-          window.gapi.auth2
-            .getAuthInstance()
-            .isSignedIn.listen(this.signedInChanged);
-          this.signedInChanged(
-            window.gapi.auth2.getAuthInstance().isSignedIn.get()
-          );
-        });
-    });
-    console.log("DONE");
+
+    this.load();
   }
 
   signedInChanged = (signedIn) => {
@@ -199,116 +181,133 @@ class App extends Component {
   }
 
   load() {
-    window.gapi.client.sheets.spreadsheets.values
-      .batchGet({
-        spreadsheetId: this.spreadsheetId,
-        ranges: [
-          "Data!A2:A50",
-          "Data!E2:E50",
-          "Expenses!A2:F",
-          "Current!H1",
-          "Previous!H1"
-        ]
+    getConfig((response) => {
+      console.log(response);
+      this.setState({
+        accounts: response.spending_type,
+        categories: response.category.monthly
       })
-      .then(response => {
-        const accounts = response.result.valueRanges[0].values.map(
-          items => items[0]
-        );
-        const categories = response.result.valueRanges[1].values.map(
-          items => items[0]
-        );
-        this.setState({
-          accounts: accounts,
-          categories: categories,
-          expenses: (response.result.valueRanges[2].values || [])
-            .map(this.parseExpense)
-            .reverse()
-            .slice(0, 30),
-          processing: false,
-          currentMonth: response.result.valueRanges[3].values[0][0],
-          previousMonth: response.result.valueRanges[4].values[0][0]
-        });
-      });
+    }, () => {
+      console.log("Error fetching configs");
+    });
+
+    getAllExpense("mkusnadi", (data) => {
+      console.log(data)
+    }, () =>{
+      console.log("Error fetching expenses");
+    })
+    // window.gapi.client.sheets.spreadsheets.values
+    //   .batchGet({
+    //     spreadsheetId: this.spreadsheetId,
+    //     ranges: [
+    //       "Data!A2:A50",
+    //       "Data!E2:E50",
+    //       "Expenses!A2:F",
+    //       "Current!H1",
+    //       "Previous!H1"
+    //     ]
+    //   })
+    //   .then(response => {
+    //     const accounts = response.result.valueRanges[0].values.map(
+    //       items => items[0]
+    //     );
+    //     const categories = response.result.valueRanges[1].values.map(
+    //       items => items[0]
+    //     );
+    //     this.setState({
+    //       accounts: accounts,
+    //       categories: categories,
+    //       expenses: (response.result.valueRanges[2].values || [])
+    //         .map(this.parseExpense)
+    //         .reverse()
+    //         .slice(0, 30),
+    //       processing: false,
+    //       currentMonth: response.result.valueRanges[3].values[0][0],
+    //       previousMonth: response.result.valueRanges[4].values[0][0]
+    //     });
+    //   });
   }
 
-    render() {
-        return (
-            <div>
-                <header className="mdc-toolbar mdc-toolbar--fixed">
-                    <div className="mdc-toolbar__row">
-                        <section className="mdc-toolbar__section mdc-toolbar__section--align-start">
-                            <span className="mdc-toolbar__title"><b>aidha</b> - Expense Manager</span>
-                        </section>
-                        <section
-                            className="mdc-toolbar__section mdc-toolbar__section--align-end"
-                            role="toolbar"
-                        >
-                            {this.state.signedIn === false &&
-                            <a
-                                className="material-icons mdc-toolbar__icon"
-                                aria-label="Sign in"
-                                alt="Sign in"
-                                onClick={e => {
-                                    e.preventDefault();
-                                    window.gapi.auth2.getAuthInstance().signIn();
-                                }}
-                            >
-                                perm_identity
-                            </a>}
-                            {this.state.signedIn &&
-                            <a
-                                className="material-icons mdc-toolbar__icon"
-                                aria-label="Sign out"
-                                alt="Sign out"
-                                onClick={e => {
-                                    e.preventDefault();
-                                    window.gapi.auth2.getAuthInstance().signOut();
-                                }}
-                            >
-                                exit_to_app
-                            </a>}
-                        </section>
-                    </div>
-                </header>
-                <div className="toolbar-adjusted-content">
-                    {this.state.signedIn === undefined && <LoadingBar />}
-                    {this.state.signedIn === false &&
-                    <div className="center">
-                        <button
-                            className="mdc-button sign-in"
-                            aria-label="Sign in"
-                            onClick={() => {
-                                window.gapi.auth2.getAuthInstance().signIn();
-                            }}
-                        >
-                            Sign In
-                        </button>
-                    </div>}
-                    {this.state.signedIn && this.renderBody()}
-                </div>
-                <div
-                    ref={el => {
-                        if (el) {
-                            this.snackbar = new MDCSnackbar(el);
-                        }
-                    }}
-                    className="mdc-snackbar"
-                    aria-live="assertive"
-                    aria-atomic="true"
-                    aria-hidden="true"
-                >
-                    <div className="mdc-snackbar__text" />
-                    <div className="mdc-snackbar__action-wrapper">
-                        <button
-                            type="button"
-                            className="mdc-button mdc-snackbar__action-button"
-                            aria-hidden="true"
-                        />
-                    </div>
-                </div>
-            </div>
-        );
-    }
+
+  render() {
+    return (
+      <div>
+        <header className="mdc-toolbar mdc-toolbar--fixed">
+          <div className="mdc-toolbar__row">
+            <section className="mdc-toolbar__section mdc-toolbar__section--align-start">
+              <span className="mdc-toolbar__title"><b>aidha</b> - Expense Manager</span>
+            </section>
+            <section
+              className="mdc-toolbar__section mdc-toolbar__section--align-end"
+              role="toolbar"
+            >
+              {this.state.signedIn === false &&
+              <a
+                className="material-icons mdc-toolbar__icon"
+                aria-label="Sign in"
+                alt="Sign in"
+                onClick={e => {
+                  e.preventDefault();
+                  window.gapi.auth2.getAuthInstance().signIn();
+                }}
+              >
+                perm_identity
+              </a>}
+              {this.state.signedIn &&
+              <a
+                className="material-icons mdc-toolbar__icon"
+                aria-label="Sign out"
+                alt="Sign out"
+                onClick={e => {
+                  e.preventDefault();
+                  window.gapi.auth2.getAuthInstance().signOut();
+                }}
+              >
+                exit_to_app
+              </a>}
+            </section>
+          </div>
+        </header>
+        <div className="toolbar-adjusted-content">
+          {this.state.signedIn === undefined && <LoadingBar />}
+          {this.state.signedIn === false &&
+          <div className="center">
+            <button
+              className="mdc-button sign-in"
+              aria-label="Sign in"
+              onClick={() => {
+                window.gapi.auth2.getAuthInstance().signIn();
+              }}
+            >
+              Sign In
+            </button>
+          </div>}
+          {this.state.signedIn && this.renderBody()}
+        </div>
+        <div
+          ref={el => {
+            if (el) {
+              this.snackbar = new MDCSnackbar(el);
+            }
+          }}
+          className="mdc-snackbar"
+          aria-live="assertive"
+          aria-atomic="true"
+          aria-hidden="true"
+        >
+          <div className="mdc-snackbar__text" />
+          <div className="mdc-snackbar__action-wrapper">
+            <button
+              type="button"
+              className="mdc-button mdc-snackbar__action-button"
+              aria-hidden="true"
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
 
   renderBody() {
     if (this.state.processing) return <LoadingBar/>;
