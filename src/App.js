@@ -39,6 +39,7 @@ class App extends Component {
   }
 
   componentDidMount() {
+
     this.load();
   }
 
@@ -235,6 +236,7 @@ class App extends Component {
     //   });
   }
 
+
   render() {
     return (
       <div>
@@ -313,6 +315,7 @@ class App extends Component {
       </div>
     );
   }
+
 
   renderBody() {
     if (this.state.processing) return <LoadingBar/>;
