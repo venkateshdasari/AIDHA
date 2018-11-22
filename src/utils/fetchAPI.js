@@ -29,14 +29,63 @@ export function login(username, password, handleSuccess, handleError) {
     })
 }
 
-export function checkLoginStatus(){
+export function checkLoginStatus(handleSuccess, handleError) {
   fetch(URL + LOGIN_ENDPOINT, {
     method: 'GET'
-  }).then((response) =>{
-    let resp = response.json();
-    console.log(resp);
-    if(resp.status === 403) throw 'wrong password';
-    if(resp.status === 404) throw 'user is not found';
-    return true;
-  })
+  }).then((response) => response.json())
+    .then((data) => {
+      if (data.status === 200) {
+        handleSuccess();
+      } else {
+        handleError();
+      }
+    })
+}
+
+export function getConfig(handleSuccess, handleError) {
+  fetch(URL + CONFIG_ENDPOINT, {
+    method: 'GET'
+  }).then((response) => response.json())
+    .then((data) => {
+      if (data.status === 200) {
+        handleSuccess();
+      } else {
+        handleError();
+      }
+    })
+}
+
+export function addExpense(userID, description, date, category, spending_type, amount, handleSuccess, handleError){
+  fetch(URL + EXPENSES_ENDPOINT, {
+      method: 'POST',
+      headers: HEADERS,
+      body: JSON.stringify({
+        "date": date,
+        "description": description,
+        "spending_type": spending_type,
+        "category": category,
+        "amount": amount,
+        "userID": userID,
+      })
+    }).then((response) => response.json())
+    .then((data) => {
+      if(data.status !== 200){
+        handleSuccess();
+      }else{
+        handleError();
+      }
+    })
+}
+
+export function getAllExpense(userID, handleSuccess, handleError){
+  fetch(URL + EXPENSES_ENDPOINT + `?user_id=${encodeURIComponent(userID)}`, {
+    method: 'GET'
+  }).then((response) => response.json())
+    .then((data) => {
+      if(data.status === 200){
+        handleSuccess(data.result);
+      }else{
+        handleError();
+      }
+    })
 }
