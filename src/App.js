@@ -26,7 +26,7 @@ class App extends Component {
       processing: true,
       expense: {},
       currentMonth: 0,
-      previousMonth: undefined,
+      currentMonthGoal: 400,
       showExpenseForm: false
     };
 
@@ -50,19 +50,6 @@ class App extends Component {
       ? this.update
       : this.append).bind(this);
     submitAction(this.state.expense);
-    //   .then(
-    //   response => {
-    //     this.snackbar.show({
-    //       message: `Expense ${this.state.expense.id ? "updated" : "added"}!`
-    //     });
-    //     this.load();
-    //   },
-    //   response => {
-    //     console.error("Something went wrong");
-    //     console.error(response);
-    //     this.setState({loading: false});
-    //   }
-    // );
   }
 
   handleExpenseChange = (attribute, value) => {
@@ -198,50 +185,18 @@ class App extends Component {
 
     getAllExpense("mkusnadi", (data) => {
       console.log(data)
+        let tmp = (data || []).map(this.parseExpense.bind(this));
       this.setState({
-        expenses: (data || [])
-          .map(this.parseExpense)
+        expenses: tmp
           .reverse()
           .slice(0, 30),
-        expenses_temp: (data || [])
-          .map(this.parseExpense),
+        expenses_temp: tmp,
         processing: false,
       });
     }, () => {
       console.log("Error fetching expenses");
     })
 
-
-    // window.gapi.client.sheets.spreadsheets.values
-    //   .batchGet({
-    //     spreadsheetId: this.spreadsheetId,
-    //     ranges: [
-    //       "Data!A2:A50",
-    //       "Data!E2:E50",
-    //       "Expenses!A2:F",
-    //       "Current!H1",
-    //       "Previous!H1"
-    //     ]
-    //   })
-    //   .then(response => {
-    //     const accounts = response.result.valueRanges[0].values.map(
-    //       items => items[0]
-    //     );
-    //     const categories = response.result.valueRanges[1].values.map(
-    //       items => items[0]
-    //     );
-    //     this.setState({
-    //       accounts: accounts,
-    //       categories: categories,
-    //       expenses: (response.result.valueRanges[2].values || [])
-    //         .map(this.parseExpense)
-    //         .reverse()
-    //         .slice(0, 30),
-    //       processing: false,
-    //       currentMonth: response.result.valueRanges[3].values[0][0],
-    //       previousMonth: response.result.valueRanges[4].values[0][0]
-    //     });
-    //   });
   }
 
 
@@ -344,7 +299,7 @@ class App extends Component {
           expense={this.state.expense}
           onSubmit={this.handleExpenseSubmit}
           onCancel={this.handleExpenseCancel}
-          onDelete={this.handleExpenseDelete}
+         // onDelete={this.handleExpenseDelete}
           onChange={this.handleExpenseChange}
         />
       );
@@ -353,13 +308,13 @@ class App extends Component {
         <div>
           <div className="mdc-card">
             <section className="mdc-card__primary">
-              <h2 className="mdc-card__subtitle">This month you've spent:</h2>
+              <h2 className="mdc-card__subtitle">This month you've spent $:</h2>
               <h1 className="mdc-card__title mdc-card__title--large center">
-                ${this.state.currentMonth}
+                {this.state.currentMonth}
               </h1>
             </section>
             <section className="mdc-card__supporting-text">
-              Previous month: {this.state.previousMonth}
+              Current month Goal: {this.state.currentMonthGoal}
             </section>
           </div>
           <ExpenseList

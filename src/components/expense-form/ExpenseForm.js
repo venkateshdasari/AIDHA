@@ -169,13 +169,13 @@ class ExpenseForm extends Component {
             value={this.props.expense.id ? "Update" : "Add"}
             disabled={!this.state.isValid}
           />
-          {this.props.expense.id &&
-            <input
-              type="button"
-              className="mdc-button"
-              onClick={() => this.dialog.show()}
-              value="Delete"
-            />}
+          {/*{this.props.expense.id &&*/}
+            {/*<input*/}
+              {/*type="button"*/}
+              {/*className="mdc-button"*/}
+              {/*onClick={() => this.dialog.show()}*/}
+              {/*value="Delete"*/}
+            {/*/>}*/}
           <input
             type="button"
             className="mdc-button"
