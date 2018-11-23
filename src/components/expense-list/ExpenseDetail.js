@@ -15,7 +15,7 @@ export default class ExpenseDetail extends Component {
       >
         <ExpenseIcon category={this.props.expense.category} />
         <span className="mdc-list-item__text">
-          {this.props.expense.category}
+          {this.props.expense.category} - {this.props.expense.account}
           <span className="mdc-list-item__text__secondary">
             {this.formatDate(this.props.expense.date)}
             {this.props.expense.description
