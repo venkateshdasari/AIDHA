@@ -16,20 +16,14 @@ const userID = "mkusnadi";
 class App extends Component {
   constructor() {
     super();
-    this.apiId = "AIzaSyAgR2G9qQgrYZvB2MoWdX4ITJObJxBJqzU";
-    this.clientId =
-      "539345050025-4ennimges3s40i2si03r0gr238bl74mk.apps.googleusercontent.com";
-    this.clientSecret = "OImloi0wEWiNb-r-Vmx3qsUc";
-    this.spreadsheetId =
-      process.env.REACT_APP_SHEET_ID ||
-      "1yLCNqfoTnt9D8JrD7NoCdJUua46QbBaFvynUJEruI58";
 
     this.state = {
       signedIn: true,
       accounts: [],
       categories: [],
       expenses: [],
-      processing: false,
+      expenses_temp: [],
+      processing: true,
       expense: {},
       currentMonth: 0,
       previousMonth: undefined,
@@ -39,7 +33,6 @@ class App extends Component {
   }
 
   componentDidMount() {
-
     this.load();
   }
 
@@ -121,7 +114,6 @@ class App extends Component {
   }
 
 
-
   onExpenseNew() {
     const now = new Date();
     this.setState({
@@ -139,6 +131,7 @@ class App extends Component {
       }
     });
   }
+
 
 
     parseExpense(value, index) {
@@ -160,25 +153,20 @@ class App extends Component {
         };
     }
 
-  formatExpense(expense) {
-    return [
-      `=DATE(${expense.date.substr(0, 4)}, ${expense.date.substr(
-        5,
-        2
-      )}, ${expense.date.substr(-2)})`,
-      expense.description,
-      expense.account,
-      expense.category,
-      expense.amount
-    ];
-  }
+
+
 
   append(expense) {
     console.log(expense);
     addExpense(userID, expense.description, expense.date, expense.category, expense.account, expense.amount, () => {
       console.log("expense ADDED");
+      let lst = this.state.expenses_temp;
+      lst.push(this.parseExpense(expense, this.state.expenses_temp.length));
       this.setState({
-        processing: false
+        expenses_temp: lst,
+        expenses: lst.reverse()
+          .slice(0, 30),
+        processing: false,
       })
     }, () => {
       console.log("expense cant be added");
@@ -210,16 +198,16 @@ class App extends Component {
 
     getAllExpense("mkusnadi", (data) => {
       console.log(data)
-
-        this.setState({
-                  expenses: (data || [])
-                    .map(this.parseExpense.bind(this))
-                    .reverse()
-                    .slice(0, 30),
-                  processing: false,
-        });
-
-    }, () =>{
+      this.setState({
+        expenses: (data || [])
+          .map(this.parseExpense)
+          .reverse()
+          .slice(0, 30),
+        expenses_temp: (data || [])
+          .map(this.parseExpense),
+        processing: false,
+      });
+    }, () => {
       console.log("Error fetching expenses");
     })
 
@@ -297,7 +285,7 @@ class App extends Component {
           </div>
         </header>
         <div className="toolbar-adjusted-content">
-          {this.state.signedIn === undefined && <LoadingBar />}
+          {this.state.signedIn === undefined && <LoadingBar/>}
           {this.state.signedIn === false &&
           <div className="center">
             <button
@@ -323,7 +311,7 @@ class App extends Component {
           aria-atomic="true"
           aria-hidden="true"
         >
-          <div className="mdc-snackbar__text" />
+          <div className="mdc-snackbar__text"/>
           <div className="mdc-snackbar__action-wrapper">
             <button
               type="button"
