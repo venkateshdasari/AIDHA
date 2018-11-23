@@ -25,7 +25,8 @@ class App extends Component {
       expenses_temp: [],
       processing: true,
       expense: {},
-      currentMonth: 0,
+      currentMonthPersonal: 0,
+      currentMonthFamily: 0,
       currentMonthGoal: 400,
       showExpenseForm: false
     };
@@ -122,12 +123,15 @@ class App extends Component {
 
 
     parseExpense(value, index) {
-
-
-        this.setState({
-            currentMonth: parseInt(value.amount) + this.state.currentMonth
-        })
-        console.log(this.state.currentMonth);
+        if(value.spending_type === "Personal"){
+          this.setState({
+            currentMonthPersonal: parseInt(value.amount) + this.state.currentMonthPersonal,
+          })
+        }else{
+          this.setState({
+            currentMonthFamily: parseInt(value.amount) + this.state.currentMonthFamily,
+          })
+        }
         return {
             id: `Expenses!A${index + 2}`,
             date: value.date,
@@ -308,9 +312,12 @@ class App extends Component {
         <div>
           <div className="mdc-card">
             <section className="mdc-card__primary">
-              <h2 className="mdc-card__subtitle">This month you've spent $:</h2>
+              <h2 className="mdc-card__subtitle">This month you've spent:</h2>
               <h1 className="mdc-card__title mdc-card__title--large center">
-                {this.state.currentMonth}
+                 Personal: ${this.state.currentMonthPersonal}
+              </h1>
+              <h1 className="mdc-card__title mdc-card__title--large center">
+                Family: ${this.state.currentMonthFamily}
               </h1>
             </section>
             <section className="mdc-card__supporting-text">
