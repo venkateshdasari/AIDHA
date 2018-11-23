@@ -31,7 +31,7 @@ class App extends Component {
       expenses: [],
       processing: false,
       expense: {},
-      currentMonth: undefined,
+      currentMonth: 0,
       previousMonth: undefined,
       showExpenseForm: false
     };
@@ -142,6 +142,12 @@ class App extends Component {
 
 
     parseExpense(value, index) {
+
+
+        this.setState({
+            currentMonth: parseInt(value.amount) + this.state.currentMonth
+        })
+        console.log(this.state.currentMonth);
         return {
             id: `Expenses!A${index + 2}`,
             date: value.date,
@@ -149,7 +155,8 @@ class App extends Component {
             category: value.category,
             amount: value.amount,
             account: value.spending_type,
-            userID:value.user_id
+            userID:value.user_id,
+            
         };
     }
 
@@ -203,13 +210,15 @@ class App extends Component {
 
     getAllExpense("mkusnadi", (data) => {
       console.log(data)
+
         this.setState({
                   expenses: (data || [])
-                    .map(this.parseExpense)
+                    .map(this.parseExpense.bind(this))
                     .reverse()
                     .slice(0, 30),
                   processing: false,
         });
+
     }, () =>{
       console.log("Error fetching expenses");
     })
@@ -358,7 +367,7 @@ class App extends Component {
             <section className="mdc-card__primary">
               <h2 className="mdc-card__subtitle">This month you've spent:</h2>
               <h1 className="mdc-card__title mdc-card__title--large center">
-                {this.state.currentMonth}
+                ${this.state.currentMonth}
               </h1>
             </section>
             <section className="mdc-card__supporting-text">
