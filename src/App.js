@@ -121,28 +121,27 @@ class App extends Component {
   }
 
 
-
-    parseExpense(value, index) {
-        if(value.spending_type === "Personal"){
-          this.setState({
-            currentMonthPersonal: parseInt(value.amount) + this.state.currentMonthPersonal,
-          })
-        }else{
-          this.setState({
-            currentMonthFamily: parseInt(value.amount) + this.state.currentMonthFamily,
-          })
-        }
-        return {
-            id: `Expenses!A${index + 2}`,
-            date: value.date,
-            description: value.description,
-            category: value.category,
-            amount: value.amount,
-            account: value.spending_type,
-            userID:value.user_id,
-            
-        };
+  parseExpense(value, index) {
+    if (value.spending_type === "Personal" || value.account === "Personal") {
+      this.setState({
+        currentMonthPersonal: parseInt(value.amount) + this.state.currentMonthPersonal,
+      })
+    } else {
+      this.setState({
+        currentMonthFamily: parseInt(value.amount) + this.state.currentMonthFamily,
+      })
     }
+    return {
+      id: `Expenses!A${index + 2}`,
+      date: value.date,
+      description: value.description,
+      category: value.category,
+      amount: value.amount,
+      account: value.spending_type,
+      userID: value.user_id,
+
+    };
+  }
 
 
 
